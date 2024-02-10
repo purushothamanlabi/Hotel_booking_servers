@@ -22,9 +22,11 @@ export const register = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   const email = req.body.email;
+
+  console.log("email", req.body.email);
+  console.log("pass", req.body.password);
 
   try {
     const user = await User.findOne({ email });
@@ -43,31 +45,21 @@ export const login = async (req, res) => {
     if (!checkCorrectPassword) {
       return res
         .status(401)
-        .json({ success: false, message: " incorrect emal or pass" });
+        .json({ success: false, message: "Incorrect email or password" });
     }
-    const { password, role, ...rest } = user._doc;
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: "15d" }
-    );
+    // Include more user data in the response as needed
+    const { _id, username, email: userEmail, role } = user;
 
-    res
-      .cookie("accessToken", token, {
-        httpOnly: true,
-        expires: token.expiresIn,
-      })
-      .status(200)
-      .json({
-        token,
-        success: true,
-        message: " successfullly login",
-        data: { ...rest },
-        role,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Successfully login",
+      data: { _id, username, email: userEmail, role },
+    });
   } catch (err) {
     console.error(err); // Log the error message
     res.status(500).json({ success: false, message: "Failed to login" });
   }
 };
+
+
